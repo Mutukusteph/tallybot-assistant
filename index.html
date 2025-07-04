@@ -4,46 +4,33 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>TallyBot Assistant</title>
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      padding: 2rem;
-      background: #f2f2f2;
-    }
-    #log, #transactions, #totals {
-      margin-top: 1rem;
-      background: white;
-      padding: 1rem;
-      border-radius: 6px;
-      box-shadow: 0 0 5px rgba(0,0,0,0.1);
-    }
-    button {
-      margin-top: 0.5rem;
-      margin-right: 0.5rem;
-    }
-  </style>
+  <link rel="stylesheet" href="style.css">
+
 </head>
 <body>
-  <h2>🧮 TallyBot - Vendor Assistant</h2>
+  <div class="container">
+    <h2>🧮 TallyBot - Vendor Assistant</h2>
 
-  <input type="text" id="input" placeholder="Type your message..." size="40"/>
-  <button onclick="sendInput()">Send</button>
-  <div id="log"></div>
+    <input type="text" id="input" placeholder="Type your message..." size="40"/>
+    <button onclick="sendInput()">Send</button>
+    <div id="log"></div>
 
-  <br>
-  <button onclick="viewAll()">📋 View All Transactions</button>
-  <button onclick="clearAll()">❌ Clear All Transactions</button>
-  <br><br>
-  <button onclick="viewByType('sale')">📈 View Sales</button>
-  <button onclick="viewByType('expense')">💸 View Expenses</button>
-  <button onclick="viewByType('inventory')">📦 View Inventory</button>
-  <br><br>
-  <button onclick="viewTotals()">🧮 View Totals</button>
+    <br>
+    <button onclick="viewAll()">📋 View All Transactions</button>
+    <button onclick="clearAll()">❌ Clear All Transactions</button>
+    <br><br>
+    <button onclick="viewByType('sale')">📈 View Sales</button>
+    <button onclick="viewByType('expense')">💸 View Expenses</button>
+    <button onclick="viewByType('inventory')">📦 View Inventory</button>
+    <br><br>
+    <button onclick="viewTotals()">🧮 View Totals</button>
 
-  <div id="transactions"></div>
-  <div id="totals"></div>
+    <div id="transactions"></div>
+    <div id="totals"></div>
+  </div>
+</body>
 
-  <script>
+<script>
   let currentView = 'all';
 
   async function sendInput() {
@@ -188,8 +175,6 @@
   window.clearAll = clearAll;
   window.deleteTransaction = deleteTransaction;
 </script>
-
-</body>
 </html>
 
 
