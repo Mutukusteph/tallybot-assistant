@@ -1,0 +1,5 @@
+# Ignore node_modules and temp folders
+node_modules/
+node_modules copy/
+markdown
+markdown copy

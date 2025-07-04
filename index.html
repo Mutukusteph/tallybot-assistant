@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>TallyBot Assistant</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      padding: 2rem;
+      background: #f2f2f2;
+    }
+    #log, #transactions, #totals {
+      margin-top: 1rem;
+      background: white;
+      padding: 1rem;
+      border-radius: 6px;
+      box-shadow: 0 0 5px rgba(0,0,0,0.1);
+    }
+    button {
+      margin-top: 0.5rem;
+      margin-right: 0.5rem;
+    }
+  </style>
+</head>
+<body>
+  <h2>🧮 TallyBot - Vendor Assistant</h2>
+
+  <input type="text" id="input" placeholder="Type your message..." size="40"/>
+  <button onclick="sendInput()">Send</button>
+  <div id="log"></div>
+
+  <br>
+  <button onclick="viewAll()">📋 View All Transactions</button>
+  <button onclick="clearAll()">❌ Clear All Transactions</button>
+  <br><br>
+  <button onclick="viewByType('sale')">📈 View Sales</button>
+  <button onclick="viewByType('expense')">💸 View Expenses</button>
+  <button onclick="viewByType('inventory')">📦 View Inventory</button>
+  <br><br>
+  <button onclick="viewTotals()">🧮 View Totals</button>
+
+  <div id="transactions"></div>
+  <div id="totals"></div>
+
+  <script>
+  let currentView = 'all';
+
+  async function sendInput() {
+    const message = document.getElementById("input").value;
+    const res = await fetch("http://localhost:1212/message", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ message })
+    });
+
+    const data = await res.json();
+    document.getElementById("log").innerHTML =
+      data.success
+        ? "✅ Transaction saved!"
+        : "❌ " + data.error;
+  }
+
+  async function viewAll() {
+    currentView = 'all';
+    const res = await fetch("http://localhost:1212/transactions");
+    const data = await res.json();
+
+    const container = document.getElementById("transactions");
+
+    if (data.success) {
+      if (data.data.length === 0) {
+        container.innerHTML = "<p>No transactions yet.</p>";
+        return;
+      }
+
+      const rows = data.data.map(t => `
+        <li>
+          🧾 <strong>${t.action}</strong> - ${t.quantity} ${t.item} at ${t.price_per_unit || 'N/A'} each. 
+          Total: ${t.total || 'N/A'}
+          <button onclick="deleteTransaction('${t.id}')">🗑️ Delete</button>
+        </li>
+      `).join('');
+
+      container.innerHTML = `<ul>${rows}</ul>`;
+    } else {
+      container.innerHTML = `❌ ${data.error}`;
+    }
+  }
+
+  async function viewByType(action) {
+    currentView = action;
+    const res = await fetch(`http://localhost:1212/transactions?action=${action}`);
+    const data = await res.json();
+    const container = document.getElementById("transactions");
+
+    if (data.success) {
+      if (data.data.length === 0) {
+        container.innerHTML = `<p>No ${action} transactions found.</p>`;
+        return;
+      }
+
+      const rows = data.data.map(t => `
+        <li>
+          🧾 <strong>${t.action}</strong> - ${t.quantity} ${t.item} at ${t.price_per_unit || 'N/A'} each. 
+          Total: ${t.total || 'N/A'}
+          <button onclick="deleteTransaction('${t.id}')">🗑️ Delete</button>
+        </li>
+      `).join('');
+
+      container.innerHTML = `<ul>${rows}</ul>`;
+    } else {
+      container.innerHTML = `❌ ${data.error}`;
+    }
+  }
+
+  async function deleteTransaction(id) {
+    console.log("🧹 Trying to delete ID:", id); // for debugging
+    const confirmDelete = confirm("Are you sure you want to delete this transaction?");
+    if (!confirmDelete) return;
+
+    try {
+      const res = await fetch(`http://localhost:1212/transactions/${id}`, {
+        method: "DELETE"
+      });
+
+      const data = await res.json();
+      if (data.success) {
+        alert("🗑️ Transaction deleted.");
+
+        if (currentView === 'all') {
+          viewAll();
+        } else {
+          viewByType(currentView);
+        }
+      } else {
+        alert("❌ " + data.error);
+      }
+    } catch (err) {
+      console.error("Error deleting:", err);
+      alert("❌ Failed to delete transaction.");
+    }
+  }
+
+  async function viewTotals() {
+    const res = await fetch("http://localhost:1212/totals");
+    const data = await res.json();
+
+    const container = document.getElementById("totals");
+
+    if (data.success) {
+      container.innerHTML = `
+        <h3>📊 Totals:</h3>
+        <ul>
+          <li>🧾 Total Sales: KES ${data.sales_total}</li>
+          <li>💸 Total Expenses: KES ${data.expenses_total}</li>
+          <li>📦 Total Inventory Items Added: ${data.inventory_count}</li>
+        </ul>
+      `;
+    } else {
+      container.innerHTML = `❌ ${data.error}`;
+    }
+  }
+
+  async function clearAll() {
+    const confirmClear = confirm("⚠️ Are you sure you want to delete ALL transactions?");
+    if (!confirmClear) return;
+
+    const res = await fetch("http://localhost:1212/transactions/clear", {
+      method: "DELETE"
+    });
+
+    const data = await res.json();
+    if (data.success) {
+      alert("✅ All transactions deleted.");
+      viewAll();
+      document.getElementById("totals").innerHTML = "";
+    } else {
+      alert("❌ " + data.error);
+    }
+  }
+
+  // 👇 Make all functions accessible in global scope
+  window.sendInput = sendInput;
+  window.viewAll = viewAll;
+  window.viewByType = viewByType;
+  window.viewTotals = viewTotals;
+  window.clearAll = clearAll;
+  window.deleteTransaction = deleteTransaction;
+</script>
+
+</body>
+</html>
+
+
+
+
+
